@@ -9,7 +9,8 @@ Pongo is going on an adventure! He will explore different environments, encounte
 ## Technical Goals
 
 In no particular order:
-- [ ] Creating classes and subclasses
+- [ ] Creating classes
+- [ ] Inheriting from class
 - [ ] Writing functions
 - [ ] Refactoring code
 - [ ] Creating decorators
@@ -34,7 +35,7 @@ Optional Extras:
 
 ### Future Development
 
-- Enemies of type
+- Enemies
     - *floating* (moves along both x and y planes in the air)
     - *jumping* (bounces along the ground)
     - *heavy* (moves along the ground, slower speed and higher attack)
@@ -56,6 +57,9 @@ Optional Extras:
 - Story 
     - Story interludes between stages
     - Choices in dialogue affect stage generation
+- Environment
+    - Doorways
+    - Portals
 
 
 ## Technical Structure
