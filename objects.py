@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
 import os
+# from spritesheet import Spritesheet
 
 ALPHA = (255,255,255)
 
@@ -58,11 +59,13 @@ class Player(pygame.sprite.Sprite):
 class Enemy(pygame.sprite.Sprite):
 
     # @TODO: Spawn enemy
-    def __init__(self, spawnx, spawny, img, img_frames, type, ALPHA=ALPHA):
+    def __init__(self, spawnx, spawny, img, img_frames, type, distance, speed, ALPHA=ALPHA):
         pygame.sprite.Sprite.__init__(self)
         self.frame = 0
         self.images = []
         self.type = type
+        self.distance = distance
+        self.speed = speed
         
         for i in range(0,img_frames):
             image = pygame.image.load(os.path.join('assets/', f'{img}{i}.png')).convert()
@@ -100,8 +103,8 @@ class EnemyFlying(Enemy):
 
 class Platform(pygame.sprite.Sprite):
     
-    # @TODO: Spawn platform
-    def __init__(self, xloc, yloc, imgw, imgh, img, ALPHA=ALPHA):
+    # Spawn platform
+    def __init__(self, xloc, yloc, img, ALPHA=ALPHA):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load(os.path.join('assets/', f'{img}.png')).convert()
         self.image.convert_alpha()
