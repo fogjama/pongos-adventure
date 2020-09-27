@@ -60,6 +60,11 @@ Optional Extras:
 - Environment
     - Doorways
     - Portals
+    - Different ground heights
+    - Different ground types
+
+- Performance
+    - Load tiles from spritesheet
 
 
 ## Technical Structure
