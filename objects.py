@@ -18,6 +18,7 @@ class Player(pygame.sprite.Sprite):
         self.images = []
         self.is_jumping = False     
         self.is_falling = True
+        self.fall_speed = 3.2
 
         for i in range(0,img_frames):
             image = pygame.image.load(os.path.join('assets/', f'{img}{i}.png')).convert()
@@ -36,7 +37,10 @@ class Player(pygame.sprite.Sprite):
         self.movey += y
 
     # Define player gravity
-    def gravity(self, fall_speed):
+    def gravity(self, fall_speed=0):
+        if fall_speed == 0:
+            fall_speed = self.fall_speed
+
         if self.is_falling:
             self.movey += fall_speed
 
@@ -49,11 +53,45 @@ class Player(pygame.sprite.Sprite):
     def stop_jumping(self):
         if self.is_jumping:
             self.is_falling = True
+            # @BUG: Possible to jump in the air while falling
             self.is_jumping = False
 
     # @TODO: Update player 
-    def update(self):
-        pass
+    def update(self, e_list=None, g_list=None, p_list=None):
+
+        # @TODO: Define collisions with enemies
+
+        # @TODO: Define collisions with ground
+        if g_list is not None:
+            ground_hit_list = pygame.sprite.spritecollide(self, g_list, False)
+            for g in ground_hit_list:
+                self.movey = 0
+                self.rect.bottom = g.rect.top
+                self.is_jumping = False
+                self.is_falling = False
+    
+        # @TODO: Define collisions with platforms
+        if p_list is not None:
+            plat_hit_list = pygame.sprite.spritecollide(self, p_list, False)
+            for p in plat_hit_list:
+                self.is_jumping = False
+                self.movey = 0
+
+                if self.rect.bottom <= p.rect.bottom:
+                    self.rect.bottom = p.rect.top
+                    self.is_falling = False
+                else:
+                    self.gravity()
+
+        # @TODO: Define falling off the world
+
+        # @TODO: Define jumping behaviour
+
+        # @TODO: Update sprite position for moving
+
+        # @TODO: Moving left
+
+        # @TODO: Moving right
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -116,22 +154,56 @@ class Platform(pygame.sprite.Sprite):
 
 class Level():
 
-    # @TODO: Initialise level
-    def __init__(self, lvl, sizex, env):
+    # Initialise level
+    def __init__(self, lvl, sizex):
         pygame.sprite.Sprite.__init__(self)
         self.lvl = lvl
         self.sizex = sizex
-        self.env = env
 
     # @TODO: Initialise enemy list
     def enemies(self):
-
         pass
 
-    # @TODO: Initialise platform list
-    def platform(self):
-        pass
+    # Initialize ground list
+    def ground(self, tilex, tiley, worldx, worldy, img, ground_height=0):
 
-    # @TODO: Initialize ground list
-    def ground(self):
-        pass
+        # If ground height is not specified, set to tile height
+        if ground_height == 0:
+            ground_height = worldy - tiley
+        
+        gloc = []
+        gloc.append({
+            'x': 0,
+            'y': ground_height,
+            'w': tilex,
+            'length': (worldx/tilex)+tilex,
+            'img': img
+        })
+
+        self.ground_list = self.platforms(gloc)
+
+        return self.ground_list
+
+    # Initialize platform list
+    def platforms(self, ploc):
+        # ploc in format {x:0, y:0, w:0, img:0, length:0, optional ALPHA:ALPHA}
+        plat_list = pygame.sprite.Group()
+
+        # Check for presence of ALPHA
+        if len(ploc) > 0:
+            if len(ploc[0]) == 6:
+                for p in ploc:
+                    if 'ALPHA' in p.keys():
+                        i = 0
+                        while i <= p['length']:
+                            plat = Platform(p['x']+(i*p['w']), p['y'], p['img'], p['ALPHA'])
+                            plat_list.add(plat)
+                    else:
+                        i = 0
+                        while i <= p['length']:
+                            plat = Platform(p['x']+(i*p['w']), p['y'], p['img'])
+                            plat_list.add(plat)
+        
+        self.plat_list = plat_list
+
+        return self.plat_list
