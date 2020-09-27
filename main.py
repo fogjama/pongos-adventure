@@ -10,7 +10,43 @@ def create_game(worldx, worldy, backdrop, hero=['hero',8,ALPHA], lvl=1, tilex=32
     pygame.init()
 
     world = pygame.display.set_mode([worldx, worldy])
-    backdrop = pygame.image.load(os.path.join('assets/', f'{backdrop}.png'))
+    backdropbox = world.get_rect()
+
+    home_backdrop = pygame.image.load(os.path.join('assets/','menu.png'))
+
+    game = True
+
+    while game == True:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                try:
+                    sys.exit()
+                finally:
+                    game = False
+            
+            if event.type == KEYDOWN:
+                # Select level
+                if event.key == ord('1'):
+                    start_level(1, hero, fps, worldx, worldy, world, clock)
+                if event.key == ord('2'):
+                    start_level(2, hero, fps, worldx, worldy, world, clock)
+                    
+                # Quite game
+                if event.key == K_ESCAPE:
+                    pygame.quit()
+                    try:
+                        sys.exit()
+                    finally:
+                        game = False
+        
+        world.blit(home_backdrop, backdropbox)
+        pygame.display.flip()
+
+def start_level(lvl, hero, fps, worldx, worldy, world, clock):
+    main = True
+    level_data = select_level(lvl, worldx, worldy)
+    backdrop = pygame.image.load(os.path.join('assets/', level_data["background"] + '.png'))
     backdropbox = world.get_rect()
 
     hero = Player(0,0,10,10,hero[0],hero[1],hero[2])
@@ -23,7 +59,7 @@ def create_game(worldx, worldy, backdrop, hero=['hero',8,ALPHA], lvl=1, tilex=32
     # @TODO: Set dynamic walk speed
     steps = 10
 
-    main = True
+    # main = True
 
     while main == True:
         for event in pygame.event.get():
@@ -57,11 +93,13 @@ def create_game(worldx, worldy, backdrop, hero=['hero',8,ALPHA], lvl=1, tilex=32
                     print('jump stop')
                 
                 if event.key == K_ESCAPE:
-                    pygame.quit()
-                    try:
-                        sys.exit()
-                    finally:
-                        main = False
+                    # pygame.quit()
+                    # try:
+                    #     sys.exit()
+                    # finally:
+                    #     main = False
+                    main = False
+                
         
         # @TODO: Implement scrolling
 
