@@ -100,25 +100,25 @@ def start_level(lvl, hero, fps, worldx, worldy, world, clock):
             
             if event.type == KEYDOWN:
                 if event.key == K_LEFT or event.key == ord('a'):
-                    # @TODO: Move player left
+                    # Move player left
                     hero.move(-steps,0)
                 if event.key == K_RIGHT or event.key == ord('d'):
-                    # @TODO: Move player right
+                    # Move player right
                     hero.move(steps,0)
                 if event.key == K_UP or event.key == ord('w') or event.key == K_SPACE:
-                    # @TODO: Jump
-                    print('jump')
+                    # Jump
+                    hero.jump()
             
             if event.type == KEYUP:
                 if event.key == K_LEFT or event.key == ord('a'):
-                    # @TODO: Stop left movement
+                    # Stop left movement
                     hero.move(steps,0)
                 if event.key == K_RIGHT or event.key == ord('d'):
-                    # @TODO: Stop right movement
+                    # Stop right movement
                     hero.move(-steps,0)
                 if event.key == K_UP or event.key == ord('w') or event.key == K_SPACE:
-                    # @TODO: Stop jump
-                    print('jump stop')
+                    # Stop jump
+                    hero.stop_jumping()
                 
                 if event.key == K_ESCAPE:
                     # pygame.quit()
@@ -141,10 +141,11 @@ def start_level(lvl, hero, fps, worldx, worldy, world, clock):
             # for e in enemy_list:
             #     e.rect.x -= scroll
         
-        
+
 
         world.blit(backdrop, backdropbox)
         hero.gravity(3.2)
+        hero.update(current_level.ani,g_list=ground_list,p_list=plat_list,worldy=worldy)
         player_list.draw(world)
 
         # @TODO: draw enemies
@@ -155,7 +156,6 @@ def start_level(lvl, hero, fps, worldx, worldy, world, clock):
         # draw platforms
         plat_list.draw(world)
 
-        hero.update(current_level.ani,g_list=ground_list,p_list=plat_list,worldy=worldy)
         pygame.display.flip()
         clock.tick(fps)
 
