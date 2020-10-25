@@ -131,14 +131,16 @@ class Player(pygame.sprite.Sprite):
 
 class Enemy(pygame.sprite.Sprite):
 
-    # @TODO: Spawn enemy
-    def __init__(self, spawnx, spawny, img, img_frames, type, distance, speed, ALPHA=ALPHA):
+    # Spawn enemy
+    def __init__(self, spawnx, spawny, img, img_frames, type, distance, speed, ALPHA=ALPHA, fall_speed=6):
         pygame.sprite.Sprite.__init__(self)
         self.frame = 0
         self.images = []
         self.type = type
         self.distance = distance
         self.speed = speed
+        self.fall_speed = fall_speed
+        self.movey = 0
         
         for i in range(0,img_frames):
             image = pygame.image.load(os.path.join('assets/', f'{img}{i}.png')).convert()
@@ -153,11 +155,40 @@ class Enemy(pygame.sprite.Sprite):
         self.counter = 0
 
     # @TODO: Set enemy movement
-    def move(self):
-        pass
+    def move(self, distance, speed, ani):
+        if self.counter >= 0 and self.counter < distance:
+            self.rect.x += speed
+            self.frame += 1
+            if self.frame > 3*ani:
+                self.frame = 0
+            self.image = self.images[self.frame//ani]
+        elif self.counter >= distance and self.counter <= distance*2:
+            self.rect -= speed
+            self.frame += 1
+            if self.frame > 3* ani:
+                self.frame = 0
+            self.image = pygame.transform.flip(self.images[self.frame//ani],True,False)
+        else:
+            self.counter = 0
+        
+        self.counter += 1
 
-    def gravity(self, fall_speed):
-        pass
+    def gravity(self, fall_speed=0, g_list=None, p_list=None):
+        if fall_speed == 0:
+            fall_speed = self.fall_speed
+
+        self.rect.y += fall_speed
+
+        if g_list is not None:
+            g_hit_list = pygame.sprite.spritecollide(self,g_list,False)
+            for g in g_hit_list:
+                if self.rect.bottom <= g.rect.top:
+                    self.rect.bottom = g.rect.top
+        if p_list is not None:
+            p_hit_list = pygame.sprite.spritecollide(self,p_list,False)
+            for p in p_hit_list:
+                if self.rect.bottom <= p.rect.top:
+                    self.rect.bottom = p.rect.top
 
 
 class EnemyFlying(Enemy):
