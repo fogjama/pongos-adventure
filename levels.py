@@ -1,3 +1,4 @@
+from random import randint
 
 def select_level(lvl, worldx, worldy):
     switcher = {
@@ -40,7 +41,22 @@ def level_1(worldx, worldy):
         'ALPHA':(0,255,0)
     })
 
-    return {'ploc': ploc,'gloc': gloc, 'background': background}
+    eloc = []
+    eloc.append({
+        'x':200,
+        'y':100,
+        'img': folder + 'skeleton-',
+        'img_frames':8,
+        'type':'ground',
+        'distance':30,
+        'speed':5,
+        'ALPHA':(0,255,0),
+        'fall_speed':6
+    })
+
+    backscroll = True
+
+    return {'ploc': ploc,'gloc': gloc, 'eloc': eloc, 'background': background, 'backscroll': backscroll}
 
 def level_2(worldx, worldy):
     lvl = '2'
@@ -65,8 +81,22 @@ def level_2(worldx, worldy):
         'img': folder + 'platform2',
         'ALPHA':(0,0,0)
     })
+    eloc = []
+    eloc.append({
+        'x':randint(100,250),
+        'y':randint(100,150),
+        'img': folder + 'skeleton-',
+        'img_frames':8,
+        'type':'ground',
+        'distance':30,
+        'speed':5,
+        'ALPHA':(0,255,0),
+        'fall_speed':6
+    })
 
-    return {'ploc': ploc,'gloc': gloc, 'background': background}
+    backscroll = True
+
+    return {'ploc': ploc,'gloc': gloc, 'eloc': eloc, 'background': background, 'backscroll': backscroll}
 
 if __name__ == "__main__":
     print(select_level(1, 800, 600))
