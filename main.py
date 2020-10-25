@@ -50,7 +50,7 @@ def start_level(lvl, hero, fps, worldx, worldy, world, clock):
     level_data = select_level(lvl, worldx, worldy)
 
     # Initialise level class based on level data
-    current_level = Level(lvl,worldx)
+    current_level = Level(lvl,worldx,level_data['backscroll'])
 
     # Set level settings values
     current_level.settings_values(worldx - 200,200,30,4)
@@ -60,6 +60,7 @@ def start_level(lvl, hero, fps, worldx, worldy, world, clock):
     backdropbox = world.get_rect()
 
     # Create hero
+    # @TODO: Move hero creation to main game function and pass into levels
     hero = Player(0,0,10,10,hero[0],hero[1],hero[2])
     player_list = pygame.sprite.Group()
     player_list.add(hero)
@@ -84,8 +85,9 @@ def start_level(lvl, hero, fps, worldx, worldy, world, clock):
     steps = 10
 
 
-    # @TODO: Create enemies
-
+    # Create enemies
+    current_level.enemies(level_data['eloc'])
+    enemy_list = current_level.enemy_list
 
     # main = True
 
@@ -129,8 +131,7 @@ def start_level(lvl, hero, fps, worldx, worldy, world, clock):
                     main = False
                 
         
-        # @TODO: Implement scrolling
-
+        # Scrolling
         if hero.rect.x >= current_level.forwardx:
             scroll = hero.rect.x - current_level.forwardx
             hero.rect.x = current_level.forwardx
@@ -138,18 +139,24 @@ def start_level(lvl, hero, fps, worldx, worldy, world, clock):
                 p.rect.x -= scroll
             for g in ground_list:
                 g.rect.x -= scroll
-            # for e in enemy_list:
-            #     e.rect.x -= scroll
+            for e in enemy_list:
+                e.rect.x -= scroll
         
-
-
+        # @TODO: Implement backscroll
+        
+        
         world.blit(backdrop, backdropbox)
         hero.gravity(3.2)
         hero.update(current_level.ani,g_list=ground_list,p_list=plat_list,worldy=worldy)
         player_list.draw(world)
 
-        # @TODO: draw enemies
-        # @TODO: Initialise enemy movement
+        # draw enemies
+        enemy_list.draw(world)
+
+        # Initialise enemy movement
+        for e in enemy_list:
+            e.gravity(g_list=ground_list,p_list=plat_list)
+            e.move(current_level.ani)
 
         # draw ground
         ground_list.draw(world)
