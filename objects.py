@@ -47,6 +47,7 @@ class Player(pygame.sprite.Sprite):
     # Define player jump
     def jump(self):
         if self.is_jumping is False:
+            self.movey = 0
             self.is_falling = False
             self.is_jumping = True
     
@@ -56,7 +57,7 @@ class Player(pygame.sprite.Sprite):
             # @BUG: Possible to jump in the air while falling
             self.is_jumping = False
 
-    # @TODO: Update player 
+    # Update player 
     def update(self, ani, e_list=None, g_list=None, p_list=None, worldy=0):
 
         # @TODO: Define collisions with enemies
@@ -65,23 +66,30 @@ class Player(pygame.sprite.Sprite):
         if g_list is not None:
             ground_hit_list = pygame.sprite.spritecollide(self, g_list, False)
             for g in ground_hit_list:
-                self.movey = 0
-                self.rect.bottom = g.rect.top + self.fall_speed
-                self.is_jumping = False
-                self.is_falling = False
+                if self.is_jumping and self.is_falling is False:
+                    self.movey = 0
+                else:
+                    self.movey = 0
+                    self.rect.bottom = g.rect.top + self.fall_speed
+                    self.is_jumping = False
+                    self.is_falling = False
     
         # Define collisions with platforms
         if p_list is not None:
             plat_hit_list = pygame.sprite.spritecollide(self, p_list, False)
             for p in plat_hit_list:
-                self.is_jumping = False
-                self.movey = 0
-
-                if self.rect.bottom <= p.rect.bottom:
-                    self.rect.bottom = p.rect.top
-                    self.is_falling = False
-                else:
+                if self.is_jumping and self.is_falling is False:
+                    self.movey = 0
                     self.gravity()
+                else:
+                    self.is_jumping = False
+                    self.movey = 0
+
+                    if self.rect.bottom <= p.rect.bottom:
+                        self.rect.bottom = p.rect.top + self.fall_speed
+                        self.is_falling = False
+                    else:
+                        self.gravity()
 
         # Define falling off the world
         if worldy > 0:
@@ -189,7 +197,7 @@ class Level:
         self.ground_list = pygame.sprite.Group()
         self.plat_list = pygame.sprite.Group()
         self.enemy_list = pygame.sprite.Group()
-        
+
         self.settings_values(200,200,30,4,True)
 
     # @TODO: Initialise enemy list
