@@ -1,5 +1,6 @@
 import pygame
 from pygame.locals import *
+from pygame import freetype
 import os
 # from spritesheet import Spritesheet
 
@@ -12,7 +13,9 @@ class Player(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.health = health
         self.maxhealth = maxhealth
+        self.score = 0
         self.frame = 0              # count frames
+        self.damage = 0             # track damage from enemy
         self.movex = 0              # move along x
         self.movey = 0              # move along y
         self.images = []
@@ -61,6 +64,24 @@ class Player(pygame.sprite.Sprite):
     def update(self, ani, e_list=None, g_list=None, p_list=None, worldy=0):
 
         # @TODO: Define collisions with enemies
+        if e_list is not None:
+            if self.is_falling and self.is_jumping is False:
+                enemy_hit_list = pygame.sprite.spritecollide(self, e_list, True)
+            else:
+                enemy_hit_list = pygame.sprite.spritecollide(self, e_list, False)
+            if self.damage == 0:
+                for e in enemy_hit_list:
+                    if self.is_falling and self.is_jumping is False:
+                        self.jump()
+                    else:
+                        if not self.rect.contains(e):
+                            self.damage = self.rect.colliderect(e)
+        if self.damage == 1:
+            idx = self.rect.collidelist(enemy_hit_list)
+            if idx == -1:
+                self.damage = 0
+                self.health -= 1
+        print(self.health)
 
         # Define collisions with ground
         if g_list is not None:
@@ -97,7 +118,7 @@ class Player(pygame.sprite.Sprite):
                 self.health -= 1
 
                 # @TODO: Allow for falling off the world in either direction
-                self.rect.x = self.rect.x + 50
+                self.rect.x = self.rect.x + 100
 
                 if worldy >= 200:
                     self.rect.y = worldy - 200
@@ -154,25 +175,27 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.x = spawnx
         self.rect.y = spawny
         self.counter = 0
+        self.frozen = True
 
     # Set enemy movement
     def move(self, ani):
-        if self.counter >= 0 and self.counter < self.distance:
-            self.rect.x += self.speed
-            self.frame += 1
-            if self.frame > 3*ani:
-                self.frame = 0
-            self.image = self.images[self.frame//ani]
-        elif self.counter >= self.distance and self.counter < self.distance*2:
-            self.rect.x -= self.speed
-            self.frame += 1
-            if self.frame > 3* ani:
-                self.frame = 0
-            self.image = pygame.transform.flip(self.images[self.frame//ani],True,False)
-        else:
-            self.counter = 0
+        if self.frozen is False:
+            if self.counter >= 0 and self.counter < self.distance:
+                self.rect.x += self.speed
+                self.frame += 1
+                if self.frame > 3*ani:
+                    self.frame = 0
+                self.image = self.images[self.frame//ani]
+            elif self.counter >= self.distance and self.counter < self.distance*2:
+                self.rect.x -= self.speed
+                self.frame += 1
+                if self.frame > 3* ani:
+                    self.frame = 0
+                self.image = pygame.transform.flip(self.images[self.frame//ani],True,False)
+            else:
+                self.counter = 0
         
-        self.counter += 1
+            self.counter += 1
 
     def gravity(self, fall_speed=0, g_list=None, p_list=None):
         if fall_speed == 0:
@@ -184,14 +207,21 @@ class Enemy(pygame.sprite.Sprite):
             g_hit_list = pygame.sprite.spritecollide(self,g_list,False)
             for g in g_hit_list:
                 self.rect.bottom = g.rect.top
+                self.frozen = False
         if p_list is not None:
             p_hit_list = pygame.sprite.spritecollide(self,p_list,False)
             for p in p_hit_list:
                 if self.rect.bottom <= p.rect.bottom:
                     self.rect.bottom = p.rect.top
+                    self.frozen = False
 
 
 class EnemyFlying(Enemy):
+
+    def __init__(self):
+        # @TODO: Define additional flying enemy init
+
+        super().__init__()
 
     # @TODO: Overwrite gravity function
     def gravity(self):
@@ -221,17 +251,23 @@ class Platform(pygame.sprite.Sprite):
 class Level:
 
     # Initialise level
-    def __init__(self, lvl, sizex, backscroll):
+    def __init__(self, lvl, sizex, backscroll, font_path=None, font_size=48):
         pygame.sprite.Sprite.__init__(self)
+        freetype.init()
+
         self.lvl = lvl
         self.sizex = sizex
         self.ground_list = pygame.sprite.Group()
         self.plat_list = pygame.sprite.Group()
         self.enemy_list = pygame.sprite.Group()
+        self.myfont = None
 
         self.settings_values(200,200,30,4,backscroll)
 
-    # @TODO: Initialise enemy list
+        if font_path is not None and font_size is not None:
+            self.myfont = freetype.Font(font_path, font_size)
+
+    # Initialise enemy list
     def enemies(self, eloc):
         # eloc as [] with elements in formatn {x:0, y:0, img:string, frames:4, type:string, distance:20, speed:5, ALPHA:(0,0,0), fall_speed:6}
         new_enemy_list = pygame.sprite.Group()

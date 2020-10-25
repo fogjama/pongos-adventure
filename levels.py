@@ -1,4 +1,5 @@
 from random import randint
+import os
 
 def select_level(lvl, worldx, worldy):
     switcher = {
@@ -55,8 +56,18 @@ def level_1(worldx, worldy):
     })
 
     backscroll = True
+    font_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),'assets/fonts','TruenoSBd.otf')
+    font_size = 48
 
-    return {'ploc': ploc,'gloc': gloc, 'eloc': eloc, 'background': background, 'backscroll': backscroll}
+    return {
+        'ploc': ploc,
+        'gloc': gloc, 
+        'eloc': eloc, 
+        'background': background, 
+        'backscroll': backscroll, 
+        'font_file': font_file,
+        'font_size': font_size
+        }
 
 def level_2(worldx, worldy):
     lvl = '2'
@@ -95,8 +106,18 @@ def level_2(worldx, worldy):
     })
 
     backscroll = True
+    font_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),'assets/fonts','TruenoSBd.otf')
+    font_size = 48
 
-    return {'ploc': ploc,'gloc': gloc, 'eloc': eloc, 'background': background, 'backscroll': backscroll}
+    return {
+        'ploc': ploc,
+        'gloc': gloc, 
+        'eloc': eloc, 
+        'background': background, 
+        'backscroll': backscroll,
+        'font_file': font_file,
+        'font_size': font_size
+        }
 
 if __name__ == "__main__":
     print(select_level(1, 800, 600))

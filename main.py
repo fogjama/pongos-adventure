@@ -43,6 +43,11 @@ def create_game(worldx, worldy, backdrop, hero=['hero',8,ALPHA], lvl=1, tilex=32
         world.blit(home_backdrop, backdropbox)
         pygame.display.flip()
 
+def stats(level,score,health,world):
+    if level.myfont is not None:
+        level.myfont.render_to(world, (4, 4), 'Score: '+str(score), (0,0,0), None)
+        level.myfont.render_to(world, (4, 72), 'Health: '+str(health), (0,0,0), None)
+
 def start_level(lvl, hero, fps, worldx, worldy, world, clock):
     main = True
 
@@ -50,7 +55,12 @@ def start_level(lvl, hero, fps, worldx, worldy, world, clock):
     level_data = select_level(lvl, worldx, worldy)
 
     # Initialise level class based on level data
-    current_level = Level(lvl,worldx,level_data['backscroll'])
+    current_level = Level(
+        lvl,
+        worldx,
+        level_data['backscroll'],
+        font_path=level_data['font_file'],
+        font_size=level_data['font_size'])
 
     # Set level settings values
     current_level.settings_values(worldx - 200,200,30,4)
@@ -143,11 +153,11 @@ def start_level(lvl, hero, fps, worldx, worldy, world, clock):
                 e.rect.x -= scroll
         
         # @TODO: Implement backscroll
-        
+
         
         world.blit(backdrop, backdropbox)
         hero.gravity(3.2)
-        hero.update(current_level.ani,g_list=ground_list,p_list=plat_list,worldy=worldy)
+        hero.update(current_level.ani,e_list=enemy_list,g_list=ground_list,p_list=plat_list,worldy=worldy)
         player_list.draw(world)
 
         # draw enemies
@@ -163,7 +173,11 @@ def start_level(lvl, hero, fps, worldx, worldy, world, clock):
         # draw platforms
         plat_list.draw(world)
 
+        # Initialise text
+        stats(current_level,hero.score,hero.health,world)
+
         pygame.display.flip()
         clock.tick(fps)
+
 
 create_game(800,600,'stage',['hero',8,(0,255,0)])
