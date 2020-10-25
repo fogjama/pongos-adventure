@@ -63,7 +63,8 @@ class Player(pygame.sprite.Sprite):
     # Update player 
     def update(self, ani, e_list=None, g_list=None, p_list=None, worldy=0):
 
-        # @TODO: Define collisions with enemies
+        # Define collisions with enemies
+        # @TODO: Fix collisions so only jumping on enemy will remove
         if e_list is not None:
             if self.is_falling and self.is_jumping is False:
                 enemy_hit_list = pygame.sprite.spritecollide(self, e_list, True)
@@ -81,7 +82,6 @@ class Player(pygame.sprite.Sprite):
             if idx == -1:
                 self.damage = 0
                 self.health -= 1
-        print(self.health)
 
         # Define collisions with ground
         if g_list is not None:

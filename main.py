@@ -43,10 +43,10 @@ def create_game(worldx, worldy, backdrop, hero=['hero',8,ALPHA], lvl=1, tilex=32
         world.blit(home_backdrop, backdropbox)
         pygame.display.flip()
 
-def stats(level,score,health,world):
+def stats(level,score,health,world,colour):
     if level.myfont is not None:
-        level.myfont.render_to(world, (4, 4), 'Score: '+str(score), (0,0,0), None)
-        level.myfont.render_to(world, (4, 72), 'Health: '+str(health), (0,0,0), None)
+        level.myfont.render_to(world, (4, 4), 'Score: '+str(score), colour, None)
+        level.myfont.render_to(world, (4, 50), 'Health: '+str(health), colour, None)
 
 def start_level(lvl, hero, fps, worldx, worldy, world, clock):
     main = True
@@ -174,7 +174,10 @@ def start_level(lvl, hero, fps, worldx, worldy, world, clock):
         plat_list.draw(world)
 
         # Initialise text
-        stats(current_level,hero.score,hero.health,world)
+        stats(current_level,hero.score,hero.health,world,level_data['font_colour'])
+
+        if hero.health == 0:
+            main = False
 
         pygame.display.flip()
         clock.tick(fps)
