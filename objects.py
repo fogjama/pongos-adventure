@@ -57,20 +57,20 @@ class Player(pygame.sprite.Sprite):
             self.is_jumping = False
 
     # @TODO: Update player 
-    def update(self, e_list=None, g_list=None, p_list=None):
+    def update(self, ani, e_list=None, g_list=None, p_list=None, worldy=0):
 
         # @TODO: Define collisions with enemies
 
-        # @TODO: Define collisions with ground
+        # Define collisions with ground
         if g_list is not None:
             ground_hit_list = pygame.sprite.spritecollide(self, g_list, False)
             for g in ground_hit_list:
                 self.movey = 0
-                self.rect.bottom = g.rect.top
+                self.rect.bottom = g.rect.top + self.fall_speed
                 self.is_jumping = False
                 self.is_falling = False
     
-        # @TODO: Define collisions with platforms
+        # Define collisions with platforms
         if p_list is not None:
             plat_hit_list = pygame.sprite.spritecollide(self, p_list, False)
             for p in plat_hit_list:
@@ -83,16 +83,43 @@ class Player(pygame.sprite.Sprite):
                 else:
                     self.gravity()
 
-        # @TODO: Define falling off the world
+        # Define falling off the world
+        if worldy > 0:
+            if self.rect.y > worldy:
+                self.health -= 1
 
-        # @TODO: Define jumping behaviour
+                # @TODO: Allow for falling off the world in either direction
+                self.rect.x = self.rect.x + 50
 
-        # @TODO: Update sprite position for moving
+                if worldy >= 200:
+                    self.rect.y = worldy - 200
+                else:
+                    self.rect.y = worldy
 
-        # @TODO: Moving left
+        # Define jumping behaviour
+        if self.is_jumping and self.is_falling is False:
+            self.is_falling = True
+            self.movey -= 33
 
-        # @TODO: Moving right
+        # Update sprite position for moving
+        self.rect.x += self.movex
+        self.rect.y += self.movey
 
+        # Moving left
+        if self.movex < 0:
+            self.is_falling = True
+            self.frame += 1
+            if self.frame > 3*ani:
+                self.frame = 0
+            self.image = pygame.transform.flip(self.images[self.frame//ani],True,False)
+
+        # Moving right
+        if self.movex > 0:
+            self.is_falling = True
+            self.frame += 1
+            if self.frame > 3*ani:
+                self.frame = 0
+            self.image = self.images[self.frame//ani]
 
 class Enemy(pygame.sprite.Sprite):
 
@@ -152,20 +179,25 @@ class Platform(pygame.sprite.Sprite):
         self.rect.y = yloc
 
 
-class Level():
+class Level:
 
     # Initialise level
     def __init__(self, lvl, sizex):
         pygame.sprite.Sprite.__init__(self)
         self.lvl = lvl
         self.sizex = sizex
+        self.ground_list = pygame.sprite.Group()
+        self.plat_list = pygame.sprite.Group()
+        self.enemy_list = pygame.sprite.Group()
+        
+        self.settings_values(200,200,30,4,True)
 
     # @TODO: Initialise enemy list
     def enemies(self):
         pass
 
     # Initialize ground list
-    def ground(self, tilex, tiley, worldx, worldy, img, ground_height=0):
+    def ground(self, tilex, tiley, worldx, worldy, img, ground_height=0, alpha_value=ALPHA):
 
         # If ground height is not specified, set to tile height
         if ground_height == 0:
@@ -177,33 +209,46 @@ class Level():
             'y': ground_height,
             'w': tilex,
             'length': (worldx/tilex)+tilex,
-            'img': img
+            'img': img,
+            'ALPHA': alpha_value 
+            # Doesn't seem to generate without specifying ALPHA value
+            # @TODO: Figure out why optional ALPHA doesn't seem to be optional
         })
 
-        self.ground_list = self.platforms(gloc)
 
-        return self.ground_list
 
-    # Initialize platform list
+        self.ground_list = self.create_platforms(gloc)
+    
+
     def platforms(self, ploc):
-        # ploc in format {x:0, y:0, w:0, img:0, length:0, optional ALPHA:ALPHA}
-        plat_list = pygame.sprite.Group()
+        self.plat_list = self.create_platforms(ploc)
 
+    # Initialize platform list for ground or platforms
+    def create_platforms(self, ploc):
+        # ploc [] with elements in format {x:0, y:0, w:0, img:0, length:0, optional ALPHA:ALPHA}
+        new_plat_list = pygame.sprite.Group()
         # Check for presence of ALPHA
         if len(ploc) > 0:
             if len(ploc[0]) == 6:
                 for p in ploc:
                     if 'ALPHA' in p.keys():
                         i = 0
-                        while i <= p['length']:
+                        while i < p['length']:
                             plat = Platform(p['x']+(i*p['w']), p['y'], p['img'], p['ALPHA'])
-                            plat_list.add(plat)
+                            new_plat_list.add(plat)
+                            i += 1
                     else:
                         i = 0
-                        while i <= p['length']:
+                        while i < p['length']:
                             plat = Platform(p['x']+(i*p['w']), p['y'], p['img'])
-                            plat_list.add(plat)
+                            new_plat_list.add(plat)
+                            i += 1
         
-        self.plat_list = plat_list
-
-        return self.plat_list
+        return new_plat_list
+    
+    def settings_values(self,forwardx,backwardx,fps,ani,backscroll=False):
+        self.forwardx = forwardx
+        self.backwardx = backwardx
+        self.fps = fps
+        self.ani = ani
+        self.backscroll = backscroll
