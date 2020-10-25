@@ -110,7 +110,8 @@ class Player(pygame.sprite.Sprite):
             self.movey -= 33
 
         # Update sprite position for moving
-        self.rect.x += self.movex
+        if self.rect.x > (0 + self.movex) or self.movex > 0:
+            self.rect.x += self.movex
         self.rect.y += self.movey
 
         # Moving left
@@ -154,16 +155,16 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.y = spawny
         self.counter = 0
 
-    # @TODO: Set enemy movement
-    def move(self, distance, speed, ani):
-        if self.counter >= 0 and self.counter < distance:
-            self.rect.x += speed
+    # Set enemy movement
+    def move(self, ani):
+        if self.counter >= 0 and self.counter < self.distance:
+            self.rect.x += self.speed
             self.frame += 1
             if self.frame > 3*ani:
                 self.frame = 0
             self.image = self.images[self.frame//ani]
-        elif self.counter >= distance and self.counter <= distance*2:
-            self.rect -= speed
+        elif self.counter >= self.distance and self.counter < self.distance*2:
+            self.rect.x -= self.speed
             self.frame += 1
             if self.frame > 3* ani:
                 self.frame = 0
@@ -182,12 +183,11 @@ class Enemy(pygame.sprite.Sprite):
         if g_list is not None:
             g_hit_list = pygame.sprite.spritecollide(self,g_list,False)
             for g in g_hit_list:
-                if self.rect.bottom <= g.rect.top:
-                    self.rect.bottom = g.rect.top
+                self.rect.bottom = g.rect.top
         if p_list is not None:
             p_hit_list = pygame.sprite.spritecollide(self,p_list,False)
             for p in p_hit_list:
-                if self.rect.bottom <= p.rect.top:
+                if self.rect.bottom <= p.rect.bottom:
                     self.rect.bottom = p.rect.top
 
 
@@ -221,7 +221,7 @@ class Platform(pygame.sprite.Sprite):
 class Level:
 
     # Initialise level
-    def __init__(self, lvl, sizex):
+    def __init__(self, lvl, sizex, backscroll):
         pygame.sprite.Sprite.__init__(self)
         self.lvl = lvl
         self.sizex = sizex
@@ -229,11 +229,29 @@ class Level:
         self.plat_list = pygame.sprite.Group()
         self.enemy_list = pygame.sprite.Group()
 
-        self.settings_values(200,200,30,4,True)
+        self.settings_values(200,200,30,4,backscroll)
 
     # @TODO: Initialise enemy list
-    def enemies(self):
-        pass
+    def enemies(self, eloc):
+        # eloc as [] with elements in formatn {x:0, y:0, img:string, frames:4, type:string, distance:20, speed:5, ALPHA:(0,0,0), fall_speed:6}
+        new_enemy_list = pygame.sprite.Group()
+
+        if len(eloc) > 0:
+            for e in eloc:
+                enemy = Enemy(
+                    e['x'],
+                    e['y'],
+                    e['img'],
+                    e['img_frames'],
+                    e['type'],
+                    e['distance'],
+                    e['speed'],
+                    e['ALPHA'],
+                    e['fall_speed']
+                        )
+                new_enemy_list.add(enemy)
+        self.enemy_list = new_enemy_list
+
 
     # Initialize ground list
     def ground(self, tilex, tiley, worldx, worldy, img, ground_height=0, alpha_value=ALPHA):
@@ -253,8 +271,6 @@ class Level:
             # Doesn't seem to generate without specifying ALPHA value
             # @TODO: Figure out why optional ALPHA doesn't seem to be optional
         })
-
-
 
         self.ground_list = self.create_platforms(gloc)
     
